@@ -4,10 +4,9 @@ services:
     image: ustcweizhou/mariadb-cluster:latest
     hostname: db01
     networks:
-        br-db:
-            ipv4_address: 172.16.10.11
+        overlay-db:
     volumes:
-      - /docker/db01:/var/lib/mysql
+      - ${DATA_DIR}/$PROJECT/db01:/var/lib/mysql
     healthcheck:
         test: ["CMD", "mysqladmin", "-uroot", "-pcloudstack", "ping"]
         interval: 10s
@@ -19,18 +18,19 @@ services:
       - CLUSTER_ADDRESS=gcomm://db01,db02,db03
       - DB_ROOT_PASSWORD=cloudstack
       - DB_MARIABACKUP_PASSWORD=cloudstack
-
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.node==docker1"
   db02:
     image: ustcweizhou/mariadb-cluster:latest
     hostname: db02
     depends_on:
-        db01:
-            condition: service_healthy
+      - db01
     networks:
-        br-db:
-            ipv4_address: 172.16.10.12
+        overlay-db:
     volumes:
-      - /docker/db02:/var/lib/mysql
+      - ${DATA_DIR}/$PROJECT/db02:/var/lib/mysql
     healthcheck:
         test: ["CMD", "mysqladmin", "-uroot", "-pcloudstack", "ping"]
         interval: 10s
@@ -42,47 +42,55 @@ services:
       - CLUSTER_ADDRESS=gcomm://db01,db02,db03
       - DB_ROOT_PASSWORD=cloudstack
       - DB_MARIABACKUP_PASSWORD=cloudstack
-      
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.node==docker2"    
   db03:
     image: ustcweizhou/mariadb-cluster:latest
     hostname: db03
     depends_on:
-        db01:
-            condition: service_healthy
-        db02:
-            condition: service_healthy
+      - db01 
+      - db02
     networks:
-        br-db:
-            ipv4_address: 172.16.10.13
+        overlay-db:
     volumes:
-      - /docker/db03:/var/lib/mysql
+      - ${DATA_DIR}/$PROJECT/db03:/var/lib/mysql
     environment:
       - NODE_NAME=db03
       - CLUSTER_ADDRESS=gcomm://db01,db02,db03
       - DB_ROOT_PASSWORD=cloudstack
       - DB_MARIABACKUP_PASSWORD=cloudstack
-
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.node==docker3"
   dbvip:
     image: nginx
     hostname: dbvip
     networks:
-        br-db:
-            ipv4_address: 172.16.10.14
+        overlay-db:
     ports:
         - "13306:3306"
-    volumes:
-      - ./nginx-galera.conf:/etc/nginx/nginx.conf
+    deploy:
+      restart_policy:
+        condition: on-failure
+    configs:
+        - source: nginx-galera
+          target: /etc/nginx/nginx.conf
     depends_on:
-        db01:
-            condition: service_healthy
+      - db01
 
+configs:
+    nginx-galera:
+        file: ./nginx-galera.conf
+        
 networks:
-    br-db:
-        driver: bridge
-        driver_opts:
-            com.docker.network.bridge.name: "br-db"
+    overlay-db:
+        driver: overlay
+        attachable: true
         ipam:
             driver: default
             config:
-                - subnet: 172.16.10.0/24
-                  gateway: 172.16.10.254
+                - subnet: 192.168.10.0/24
+
