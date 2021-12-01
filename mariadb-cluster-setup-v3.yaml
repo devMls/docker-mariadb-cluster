@@ -21,7 +21,7 @@ services:
       - dbnet
     ports:
       - 3306:3306
-      - 8989:8989
+      - 3307:3307
     environment:
       - BACKEND_SERVER_LIST=db1,db2,db3
       - ENABLE_ROOT_USER=1
