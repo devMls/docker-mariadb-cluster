@@ -14,6 +14,7 @@ networks:
     driver: overlay
 
 services:
+  balancer_mysql:
     image: wdmaster/sql_ha
     networks:
       - internal
