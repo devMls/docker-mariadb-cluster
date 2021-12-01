@@ -15,7 +15,7 @@ networks:
 
 services:
   balancer_mysql:
-    image: wdmaster/sql_ha
+    image: wdmaster/sql_ha:1.0
     networks:
       - dbnet
     ports:
