@@ -150,10 +150,10 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:  [node.labels.node==docker1]  
     command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-    placement:
-      constraints:  [node.labels.node==docker1]        
-        
+
   exporter_mysql_db2:
     image: prom/mysqld-exporter:latest
     hostname: exporter_mysql_db2
@@ -164,9 +164,10 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:  [node.labels.node==docker2]  
     command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-    placement:
-      constraints:  [node.labels.node==docker2]    
+  
       
   exporter_mysql_db3:
     image: prom/mysqld-exporter:latest
@@ -178,9 +179,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:  [node.labels.node==docker3]         
     command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-    placement:
-      constraints:  [node.labels.node==docker3]         
      
   prometheus:
     image: bitnami/prometheus:latest
