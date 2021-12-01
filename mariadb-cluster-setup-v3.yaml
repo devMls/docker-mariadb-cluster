@@ -10,14 +10,14 @@ volumes:
 
 networks:
   dbnet:
-    name: internal
+    name: sqlnet
     driver: overlay
 
 services:
   balancer_mysql:
     image: wdmaster/sql_ha
     networks:
-      - internal
+      - dbnet
     ports:
       - 3307:3306
       - 8989:8989
@@ -34,7 +34,7 @@ services:
   db1:
     image: docker.io/bitnami/mariadb-galera:10.5
     networks:
-      - internal
+      - dbnet
     volumes:
       - sql_data1:/bitnami/mariadb
     environment:
@@ -63,7 +63,7 @@ services:
   db2:
     image: docker.io/bitnami/mariadb-galera:10.5
     networks:
-      - internal
+      - dbnet
     volumes:
       - sql_data2:/bitnami/mariadb
     environment:
@@ -92,7 +92,7 @@ services:
   db3:
     image: docker.io/bitnami/mariadb-galera:10.5
     networks:
-      - internal
+      - dbnet
     volumes:
       - sql_data3:/bitnami/mariadb
     environment:
