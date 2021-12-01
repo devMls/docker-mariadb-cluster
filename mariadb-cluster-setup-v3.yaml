@@ -1,53 +1,80 @@
 version: "3.8"
 services:
   db01:
-    image: ustcweizhou/mariadb-cluster:latest
+    mariadb-galera-bootstrap:
+    image: 'bitnami/mariadb-galera:latest'
+    environment:
+      - MARIADB_GALERA_CLUSTER_NAME=galera
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_ROOT_PASSWORD=my_root_password
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes
+      - MARIADB_USER=my_user
+      - MARIADB_PASSWORD=my_password
+      - MARIADB_DATABASE=my_database
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
     hostname: db01
     networks:
-        overlay-db:
+        marianet:
     volumes:
-      - db01:/var/lib/mysql
+      - /path/to/mariadb-persistence:/bitnami/mariadb
     healthcheck:
-        test: ["CMD", "mysqladmin", "-uroot", "-pcloudstack", "ping"]
+        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
         interval: 10s
         timeout: 10s
         retries: 60
         start_period: 10s
-    environment:
-      - NODE_NAME=db01
-      - CLUSTER_ADDRESS=gcomm://db01,db02,db03
-      - DB_ROOT_PASSWORD=cloudstack
-      - DB_MARIABACKUP_PASSWORD=cloudstack
     deploy:
+      replicas: 1
       placement:
         constraints:
           - "node.labels.node==docker1"
   db02:
-    image: ustcweizhou/mariadb-cluster:latest
-    hostname: db02
-    depends_on:
-      - db01
-    networks:
-        overlay-db:
-    volumes:
-      - db02:/var/lib/mysql
+    image: 'bitnami/mariadb-galera:latest'
     healthcheck:
-        test: ["CMD", "mysqladmin", "-uroot", "-pcloudstack", "ping"]
+        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
         interval: 10s
         timeout: 10s
         retries: 60
         start_period: 10s
     environment:
-      - NODE_NAME=db02
-      - CLUSTER_ADDRESS=gcomm://db01,db02,db03
-      - DB_ROOT_PASSWORD=cloudstack
-      - DB_MARIABACKUP_PASSWORD=cloudstack
+      - MARIADB_GALERA_CLUSTER_NAME=my_galera
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_ROOT_PASSWORD=my_root_password
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
+    hostname: db02
+    depends_on:
+      - db01 
+      - db02
+    networks:
+        marianet:
+    volumes:
+      - /path/to/mariadb-persistence:/bitnami/mariadb
     deploy:
+      replicas: 1
       placement:
         constraints:
-          - "node.labels.node==docker2"    
+          - "node.labels.node==docker2"   
   db03:
-    image: ustcweizhou/mariadb-cluster:latest
+    image: 'bitnami/mariadb-galera:latest'
+    healthcheck:
+        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
+        interval: 10s
+        timeout: 10s
+        retries: 60
+        start_period: 10s
+    environment:
+      - MARIADB_GALERA_CLUSTER_NAME=my_galera
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_ROOT_PASSWORD=my_root_password
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
     hostname: db03
     depends_on:
       - db01 
@@ -55,13 +82,9 @@ services:
     networks:
         overlay-db:
     volumes:
-      - db03:/var/lib/mysql
-    environment:
-      - NODE_NAME=db03
-      - CLUSTER_ADDRESS=gcomm://db01,db02,db03
-      - DB_ROOT_PASSWORD=cloudstack
-      - DB_MARIABACKUP_PASSWORD=cloudstack
+      - /path/to/mariadb-persistence:/bitnami/mariadb
     deploy:
+      replicas: 1
       placement:
         constraints:
           - "node.labels.node==docker3"
@@ -69,7 +92,7 @@ services:
     image: nginx
     hostname: dbvip
     networks:
-        overlay-db:
+        marianet:
     ports:
         - "13306:3306"
     deploy:
@@ -86,15 +109,6 @@ configs:
         file: ./nginx-galera.conf
         
 networks:
-    overlay-db:
-        driver: overlay
-        attachable: true
-        ipam:
-            driver: default
-            config:
-                - subnet: 192.168.10.0/24
-
-volumes:
-    db01:
-    db02:
-    db03:
+  marianet:
+    driver: overlay
+    attachable: true
