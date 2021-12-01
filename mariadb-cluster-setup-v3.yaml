@@ -139,3 +139,57 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker3]
+
+  exporter_mysql_db1:
+    image: prom/mysqld-exporter:latest
+    hostname: exporter_mysql_db1   
+    networks:
+      - dbnet
+    environment:
+      - DATA_SOURCE_NAME="root:password@(db1:3306)/"
+    deploy:
+      mode: replicated
+      replicas: 1
+    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    placement:
+      constraints:  [node.labels.node==docker1]        
+        
+  exporter_mysql_db2:
+    image: prom/mysqld-exporter:latest
+    hostname: exporter_mysql_db2
+    networks:
+      - dbnet
+    environment:
+      - DATA_SOURCE_NAME="root:password@(db2:3306)/"
+    deploy:
+      mode: replicated
+      replicas: 1
+    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    placement:
+      constraints:  [node.labels.node==docker2]    
+      
+  exporter_mysql_db3:
+    image: prom/mysqld-exporter:latest
+    hostname: exporter_mysql_db3
+    networks:
+      - dbnet
+    environment:
+      - DATA_SOURCE_NAME="root:password@(db3:3306)/"
+    deploy:
+      mode: replicated
+      replicas: 1
+    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    placement:
+      constraints:  [node.labels.node==docker3]         
+     
+  prometheus:
+    image: bitnami/prometheus:latest
+    hostname: prometheus
+    networks:
+      - dbnet   
+    ports:
+      - '9090:9090'
+    deploy:
+      mode: replicated
+      replicas: 1  
+      
