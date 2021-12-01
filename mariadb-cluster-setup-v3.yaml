@@ -33,6 +33,7 @@ services:
       replicas: 1
   db1:
     image: docker.io/bitnami/mariadb-galera:10.5
+    hostname: db1
     networks:
       - dbnet
     volumes:
@@ -45,8 +46,7 @@ services:
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
-      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567      
+      - CLUSTER_ADDRESS=gcomm://db1,db2,db3
       - MARIADB_REPLICATION_USER=my_replication_user
       - MARIADB_REPLICATION_PASSWORD=my_replication_password
     healthcheck:
@@ -62,6 +62,7 @@ services:
         constraints: [node.labels.node==docker1]
   db2:
     image: docker.io/bitnami/mariadb-galera:10.5
+    hostname: db2
     networks:
       - dbnet
     volumes:
@@ -72,7 +73,7 @@ services:
       - MARIADB_USER=mydbuser
       - MARIADB_PASSWORD=mydbpass
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567
+      - CLUSTER_ADDRESS=gcomm://db1,db2,db3
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
@@ -91,6 +92,7 @@ services:
         constraints:  [node.labels.node==docker2]
   db3:
     image: docker.io/bitnami/mariadb-galera:10.5
+    hostname: db3
     networks:
       - dbnet
     volumes:
@@ -101,7 +103,7 @@ services:
       - MARIADB_USER=mydbuser
       - MARIADB_PASSWORD=mydbpass
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567
+      - CLUSTER_ADDRESS=gcomm://db1,db2,db3
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
