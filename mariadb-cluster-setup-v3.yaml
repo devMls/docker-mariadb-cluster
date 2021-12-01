@@ -46,7 +46,6 @@ services:
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes
-      - MARIADB_GALERA_CLUSTER_ADDRESS=yes
       - MARIADB_REPLICATION_USER=my_replication_user
       - MARIADB_REPLICATION_PASSWORD=my_replication_password
     healthcheck:
@@ -72,7 +71,7 @@ services:
       - MARIADB_USER=mydbuser
       - MARIADB_PASSWORD=mydbpass
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
@@ -101,7 +100,7 @@ services:
       - MARIADB_USER=mydbuser
       - MARIADB_PASSWORD=mydbpass
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
