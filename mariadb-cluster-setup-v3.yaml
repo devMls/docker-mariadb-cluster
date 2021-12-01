@@ -80,7 +80,7 @@ services:
       - db01 
       - db02
     networks:
-        overlay-db:
+        marianet:
     volumes:
       - /path/to/mariadb-persistence:/bitnami/mariadb
     deploy:
