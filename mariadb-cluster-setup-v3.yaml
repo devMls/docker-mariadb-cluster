@@ -104,7 +104,7 @@ services:
       - MARIADB_USER=mydbuser
       - MARIADB_PASSWORD=mydbpass
       - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm:/db1:4567,0.0.0.0:4567
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://db1:4567,0.0.0.0:4567
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
