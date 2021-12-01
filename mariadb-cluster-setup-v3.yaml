@@ -152,7 +152,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker1]  
-    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: mysqld-exporter -e DATA_SOURCE_NAME="root:password@(db1:3306)/" -p 9104 --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
 
   exporter_mysql_db2:
     image: prom/mysqld-exporter:latest
@@ -166,7 +166,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker2]  
-    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: mysqld-exporter -e DATA_SOURCE_NAME="root:password@(db2:3306)/" -p 9104 --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
   
       
   exporter_mysql_db3:
@@ -181,7 +181,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker3]         
-    command: prom/mysqld-exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: mysqld-exporter -e DATA_SOURCE_NAME="root:password@(db3:3306)/" -p 9104 --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
      
   prometheus:
     image: bitnami/prometheus:latest
@@ -193,4 +193,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1  
-      
+
+
+  
