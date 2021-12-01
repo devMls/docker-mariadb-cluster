@@ -36,12 +36,14 @@ services:
     image: bitnami/phpmyadmin:latest
     hostname: phpmyadmin   
     ports:
-      - '80:8181'
-      - '443:8143'
+      - '80:8080'
+      - '443:8443'
     depends_on:
       - db1   
     networks:
-      - dbnet      
+      - dbnet   
+    environment:
+      - PHPMYADMIN_ALLOW_ARBITRARY_SERVER=yes
     deploy:
       mode: replicated
       replicas: 1  
