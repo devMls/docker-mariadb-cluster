@@ -152,7 +152,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker1]  
-    command: /bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
 
   exporter_mysql_db2:
     image: prom/mysqld-exporter:latest
@@ -166,7 +166,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker2]  
-    command: /bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
   
       
   exporter_mysql_db3:
@@ -181,7 +181,7 @@ services:
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker3]         
-    command: /bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
+    command: bin/mysqld_exporter --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
      
   prometheus:
     image: bitnami/prometheus:latest
