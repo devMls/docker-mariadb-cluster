@@ -1,114 +1,121 @@
-version: "3.8"
-services:
-  db01:
-    mariadb-galera-bootstrap:
-    image: 'bitnami/mariadb-galera:latest'
-    environment:
-      - MARIADB_GALERA_CLUSTER_NAME=galera
-      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
-      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
-      - MARIADB_ROOT_PASSWORD=my_root_password
-      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes
-      - MARIADB_USER=my_user
-      - MARIADB_PASSWORD=my_password
-      - MARIADB_DATABASE=my_database
-      - MARIADB_REPLICATION_USER=my_replication_user
-      - MARIADB_REPLICATION_PASSWORD=my_replication_password
-    hostname: db01
-    networks:
-        marianet:
-    volumes:
-      - /path/to/mariadb-persistence:/bitnami/mariadb
-    healthcheck:
-        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
-        interval: 10s
-        timeout: 10s
-        retries: 60
-        start_period: 10s
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - "node.labels.node==docker1"
-  db02:
-    image: 'bitnami/mariadb-galera:latest'
-    healthcheck:
-        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
-        interval: 10s
-        timeout: 10s
-        retries: 60
-        start_period: 10s
-    environment:
-      - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
-      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
-      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
-      - MARIADB_ROOT_PASSWORD=my_root_password
-      - MARIADB_REPLICATION_USER=my_replication_user
-      - MARIADB_REPLICATION_PASSWORD=my_replication_password
-    hostname: db02
-    depends_on:
-      - db01 
-      - db02
-    networks:
-        marianet:
-    volumes:
-      - /path/to/mariadb-persistence:/bitnami/mariadb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - "node.labels.node==docker2"   
-  db03:
-    image: 'bitnami/mariadb-galera:latest'
-    healthcheck:
-        test: ["CMD", "mysqladmin", "-uroot", "-pmy_root_password", "ping"]
-        interval: 10s
-        timeout: 10s
-        retries: 60
-        start_period: 10s
-    environment:
-      - MARIADB_GALERA_CLUSTER_NAME=my_galera
-      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://galsera_mariadb-galera-bootstrap:4567,0.0.0.0:4567
-      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
-      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
-      - MARIADB_ROOT_PASSWORD=my_root_password
-      - MARIADB_REPLICATION_USER=my_replication_user
-      - MARIADB_REPLICATION_PASSWORD=my_replication_password
-    hostname: db03
-    depends_on:
-      - db01 
-      - db02
-    networks:
-        marianet:
-    volumes:
-      - /path/to/mariadb-persistence:/bitnami/mariadb
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - "node.labels.node==docker3"
-  dbvip:
-    image: nginx
-    hostname: dbvip
-    networks:
-        marianet:
-    ports:
-        - "13306:3306"
-    deploy:
-      restart_policy:
-        condition: on-failure
-    configs:
-        - source: nginx-galera
-          target: /etc/nginx/nginx.conf
-    depends_on:
-      - db01
+ version: '3.8'
+volumes:
+  sql_data1:
+    driver: local
+  sql_data2:
+    driver: local
+  sql_data3:
+    driver: local
 
-configs:
-    nginx-galera:
-        file: ./nginx-galera.conf
-        
 networks:
-  marianet:
+  dbnet:
+    name: internal
     driver: overlay
-    attachable: true
+
+services:
+    image: wdmaster/sql_ha
+    networks:
+      - internal
+    ports:
+      - 3307:3306
+      - 8989:8989
+    environment:
+      - BACKEND_SERVER_LIST=db1,db2,db3
+      - ENABLE_ROOT_USER=1
+      - MAX_USER=root
+      - MAX_PASS=password
+      - REST_USER=admin
+      - REST_PASS=password
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  db1:
+    image: docker.io/bitnami/mariadb-galera:10.5
+    networks:
+      - internal
+    volumes:
+      - sql_data1:/bitnami/mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=mydb
+      - MARIADB_USER=mydbuser
+      - MARIADB_PASSWORD=mydbpass
+      - MARIADB_GALERA_CLUSTER_NAME=my_galera
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://db1:4567,db2:4567,db3:4567
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb-galera/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.labels.node==docker1]
+
+  db2:
+    image: docker.io/bitnami/mariadb-galera:10.5
+    networks:
+      - internal
+    volumes:
+      - sql_data2:/bitnami/mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=mydb
+      - MARIADB_USER=mydbuser
+      - MARIADB_PASSWORD=mydbpass
+      - MARIADB_GALERA_CLUSTER_NAME=my_galera
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://db1:4567,db2:4567,db3:4567
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb-galera/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:  [node.labels.node==docker2]
+
+  db3:
+    image: docker.io/bitnami/mariadb-galera:10.5
+    networks:
+      - internal
+    volumes:
+      - sql_data3:/bitnami/mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=mydb
+      - MARIADB_USER=mydbuser
+      - MARIADB_PASSWORD=mydbpass
+      - MARIADB_GALERA_CLUSTER_NAME=my_galera
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://db1:4567,db2:4567,db3:4567
+      - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
+      - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
+      - MARIADB_GALERA_CLUSTER_BOOTSTRAP=no
+      - MARIADB_REPLICATION_USER=my_replication_user
+      - MARIADB_REPLICATION_PASSWORD=my_replication_password
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb-galera/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints:  [node.labels.node==docker3]
