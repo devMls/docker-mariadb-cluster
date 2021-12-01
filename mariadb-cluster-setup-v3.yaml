@@ -46,6 +46,7 @@ services:
       - MARIADB_GALERA_MARIABACKUP_USER=my_mariabackup_user
       - MARIADB_GALERA_MARIABACKUP_PASSWORD=my_mariabackup_password
       - MARIADB_GALERA_CLUSTER_BOOTSTRAP=yes
+      - MARIADB_GALERA_CLUSTER_ADDRESS=gcomm://mariadb-galera:4567,0.0.0.0:4567      
       - MARIADB_REPLICATION_USER=my_replication_user
       - MARIADB_REPLICATION_PASSWORD=my_replication_password
     healthcheck:
