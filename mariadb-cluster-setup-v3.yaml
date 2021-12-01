@@ -31,6 +31,21 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      
+  phpmyadmin:
+    image: bitnami/phpmyadmin:latest
+    hostname: phpmyadmin   
+    ports:
+      - '80:8181'
+      - '443:8143'
+    depends_on:
+      - db1   
+    networks:
+      - dbnet      
+    deploy:
+      mode: replicated
+      replicas: 1  
+      
   db1:
     image: docker.io/bitnami/mariadb-galera:10.5
     hostname: db1
