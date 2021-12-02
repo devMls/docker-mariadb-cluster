@@ -199,5 +199,6 @@ services:
 
 configs:
   prometheus2:
-    file: ./prometheus2.yml
+    external: true
+    name: prometheus2.yml
   
