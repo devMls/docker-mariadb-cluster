@@ -192,7 +192,7 @@ services:
       - '9090:9090'
     configs:
       - source: prometheus2
-        target: /etc/prometheus/prometheus.yml
+        target: /opt/bitnami/prometheus/conf/prometheus.yml
     deploy:
       mode: replicated
       replicas: 1  
