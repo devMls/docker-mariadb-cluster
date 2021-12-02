@@ -146,7 +146,7 @@ services:
     networks:
       - dbnet
     environment:
-      - DATA_SOURCE_NAME="root:password@db1:3306"
+      - DATA_SOURCE_NAME=root:password@(db1:3306)/
     deploy:
       mode: replicated
       replicas: 1
@@ -160,7 +160,7 @@ services:
     networks:
       - dbnet
     environment:
-      - DATA_SOURCE_NAME="root:password@db2:3306"
+      - DATA_SOURCE_NAME=root:password@(db2:3306)/
     deploy:
       mode: replicated
       replicas: 1
@@ -175,7 +175,7 @@ services:
     networks:
       - dbnet
     environment:
-      - DATA_SOURCE_NAME="root:password@db3:3306"
+      - DATA_SOURCE_NAME=root:password@(db3:3306)/
     deploy:
       mode: replicated
       replicas: 1
