@@ -190,9 +190,9 @@ services:
       - dbnet   
     ports:
       - '9090:9090'
-    volumes:
-      - ./prometheus2.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus2.yml:/etc/prometheus/prometheus.yml
+    configs:
+      - source: prometheus2
+        target: /etc/prometheus/prometheus.yml
     deploy:
       mode: replicated
       replicas: 1  
