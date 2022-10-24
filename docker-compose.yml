@@ -55,6 +55,9 @@ services:
       - dbnet
     volumes:
       - sql_data1:/bitnami/mariadb
+    configs:
+      - source: mysqlcnf
+        target: /opt/bitnami/mariadb/conf/my_custom.cnf:ro
     environment:
       - MARIADB_ROOT_PASSWORD=password
       - MARIADB_DATABASE=mydb
@@ -78,6 +81,7 @@ services:
       replicas: 1
       placement:
         constraints: [node.labels.node==docker1]
+        
   db2:
     image: docker.io/bitnami/mariadb-galera:10.5.17-3
     hostname: db2
@@ -262,3 +266,6 @@ configs:
   proxysql:
     external: true
     name: proxysql.cnf
+  mysqlcnf:
+    external: true
+    name: mysql.cnf
