@@ -244,7 +244,7 @@ services:
       mode: replicated
       replicas: 1
       placement:
-   command: pmm-admin add proxysql --username=admin --password=admin --service-name=my-new-proxysql --host=pmm_server --port=6032
+   command: pmm-admin add proxysql --username=admin --password=admin --service-name=my-new-proxysql --host=db_balancer --port=6032
    
   pmm_server:
     image: percona/pmm-server:2
