@@ -15,20 +15,21 @@ networks:
 
 services:
   balancer_mysql:
-    image: wdmaster/sql_ha:1.0
+    image: severalnines/proxysql:2.3.2
     hostname: db_balancer   
     networks:
       - dbnet
     ports:
       - 3306:3306
       - 3307:3307
-    environment:
-      - BACKEND_SERVER_LIST=db1,db2,db3
-      - ENABLE_ROOT_USER=1
-      - MAX_USER=root
-      - MAX_PASS=password
-      - REST_USER=admin
-      - REST_PASS=password
+      - 6033:6033 
+      - 6032:6032
+      - 6080:6080
+    configs:
+      - source: proxyconf
+        target: /etc/proxysql.cnf
+      
+      -v /root/proxysql/proxysql.cnf:
     deploy:
       mode: replicated
       replicas: 1
@@ -201,4 +202,6 @@ configs:
   prometheus2:
     external: true
     name: prometheus2.yml
-  
+  proxysql:
+    external: true
+    name: proxysql.cnf
