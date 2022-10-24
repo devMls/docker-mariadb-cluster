@@ -191,9 +191,9 @@ services:
         constraints:  [node.labels.node==docker2]  
    command: pmm-admin add mysql --username=root --password 'password' --host db2  --query-source=perfschema
    
-  exporter_mysql_proxysql:
+  exporter_mysql_db3:
     image: percona/pmm-client:2
-    hostname: pmm_client_proxysql 
+    hostname: pmm_client_db3 
     networks:
       - dbnet
     depends_on:
