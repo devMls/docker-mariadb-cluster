@@ -28,8 +28,6 @@ services:
     configs:
       - source: proxyconf
         target: /etc/proxysql.cnf
-      
-      -v /root/proxysql/proxysql.cnf:
     deploy:
       mode: replicated
       replicas: 1
