@@ -5,3 +5,4 @@ performance-schema-instrument='statement/%=ON'
 performance-schema-consumer-statements-digest=ON
 innodb_monitor_enable=all
 performance_schema.setup_instruments='statement/%'
+query_response_time_stats=ON
