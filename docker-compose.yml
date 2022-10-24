@@ -49,7 +49,7 @@ services:
       replicas: 1  
       
   db1:
-    image: docker.io/bitnami/mariadb-galera:10.5
+    image: docker.io/bitnami/mariadb-galera:10.5.17-3
     hostname: db1
     networks:
       - dbnet
@@ -79,7 +79,7 @@ services:
       placement:
         constraints: [node.labels.node==docker1]
   db2:
-    image: docker.io/bitnami/mariadb-galera:10.5
+    image: docker.io/bitnami/mariadb-galera:10.5.17-3
     hostname: db2
     networks:
       - dbnet
@@ -109,7 +109,7 @@ services:
       placement:
         constraints:  [node.labels.node==docker2]
   db3:
-    image: docker.io/bitnami/mariadb-galera:10.5
+    image: docker.io/bitnami/mariadb-galera:10.5.17-3
     hostname: db3
     networks:
       - dbnet
@@ -140,66 +140,125 @@ services:
         constraints:  [node.labels.node==docker3]
 
   exporter_mysql_db1:
-    image: prom/mysqld-exporter:latest
-    hostname: exporter_mysql_db1   
+    image: percona/pmm-client:2
+    hostname: pmm_client_db1   
     networks:
       - dbnet
+    depends_on:
+      - db1
+      - pmm_server
     environment:
-      - DATA_SOURCE_NAME=root:password@(db1:3306)/
+      - PMM_AGENT_SERVER_ADDRESS=pmm_server:443
+      - PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} 
+      - PMM_AGENT_SERVER_USERNAME=root 
+      - PMM_AGENT_SERVER_PASSWORD=password 
+      - PMM_AGENT_SERVER_INSECURE_TLS=1 
+      - PMM_AGENT_SETUP=1 
+      - PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml
+     configs:
+      - source: pmm_client
+        target: config/pmm-agent.yaml
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker1]  
-    command: --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-
+   command: pmm-admin add mysql --username=root --password 'password' --host db1  --query-source=perfschema
+   
   exporter_mysql_db2:
-    image: prom/mysqld-exporter:latest
-    hostname: exporter_mysql_db2
+    image: percona/pmm-client:2
+    hostname: pmm_client_db2   
     networks:
       - dbnet
+    depends_on:
+      - db2
+      - pmm_server
     environment:
-      - DATA_SOURCE_NAME=root:password@(db2:3306)/
+      - PMM_AGENT_SERVER_ADDRESS=pmm_server:443
+      - PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} 
+      - PMM_AGENT_SERVER_USERNAME=root 
+      - PMM_AGENT_SERVER_PASSWORD=password 
+      - PMM_AGENT_SERVER_INSECURE_TLS=1 
+      - PMM_AGENT_SETUP=1 
+      - PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml
+    configs:
+      - source: pmm_client
+        target: config/pmm-agent.yaml      
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:  [node.labels.node==docker2]  
-    command: --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-  
-      
-  exporter_mysql_db3:
-    image: prom/mysqld-exporter:latest
-    hostname: exporter_mysql_db3
+   command: pmm-admin add mysql --username=root --password 'password' --host db2  --query-source=perfschema
+   
+  exporter_mysql_proxysql:
+    image: percona/pmm-client:2
+    hostname: pmm_client_proxysql 
     networks:
       - dbnet
+    depends_on:
+      - db3
+      - pmm_server
     environment:
-      - DATA_SOURCE_NAME=root:password@(db3:3306)/
+      - PMM_AGENT_SERVER_ADDRESS=pmm_server:443
+      - PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} 
+      - PMM_AGENT_SERVER_USERNAME=root 
+      - PMM_AGENT_SERVER_PASSWORD=password 
+      - PMM_AGENT_SERVER_INSECURE_TLS=1 
+      - PMM_AGENT_SETUP=1 
+      - PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml
+    configs:
+      - source: pmm_client
+        target: config/pmm-agent.yaml      
     deploy:
       mode: replicated
       replicas: 1
       placement:
-        constraints:  [node.labels.node==docker3]         
-    command: --collect.info_schema.innodb_metrics --collect.info_schema.tablestats --collect.info_schema.tables --collect.info_schema.userstats --collect.engine_innodb_status
-     
-  prometheus:
-    image: bitnami/prometheus:latest
-    hostname: prometheus
+        constraints:  [node.labels.node==docker3]  
+   command: pmm-admin add mysql --username=root --password 'password' --host db3  --query-source=perfschema   
+
+  exporter_mysql_proxysql:
+    image: percona/pmm-client:2
+    hostname: pmm_client_proxysql
+    networks:
+      - dbnet
+    depends_on:
+      - db_balancer
+      - pmm_server
+    environment:
+      - PMM_AGENT_SERVER_ADDRESS=pmm_server:443
+      - PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} 
+      - PMM_AGENT_SERVER_USERNAME=root 
+      - PMM_AGENT_SERVER_PASSWORD=password 
+      - PMM_AGENT_SERVER_INSECURE_TLS=1 
+      - PMM_AGENT_SETUP=1 
+      - PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml
+    configs:
+      - source: pmm_client
+        target: config/pmm-agent.yaml      
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+   command: pmm-admin add proxysql --username=admin --password=admin --service-name=my-new-proxysql --host=pmm_server --port=6032
+   
+  pmm_server:
+    image: percona/pmm-server:2
+    hostname: pmm_server
     networks:
       - dbnet   
     ports:
-      - '9090:9090'
-    configs:
-      - source: prometheus2
-        target: /opt/bitnami/prometheus/conf/prometheus.yml
+      - '443:443'
+    environment:
+      - ENABLE_BACKUP_MANAGEMENT=yes
     deploy:
       mode: replicated
       replicas: 1  
 
 configs:
-  prometheus2:
+  pmm_client:
     external: true
-    name: prometheus2.yml
+    name: pmm-agent.yaml
   proxysql:
     external: true
     name: proxysql.cnf
