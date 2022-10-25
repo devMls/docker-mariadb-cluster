@@ -12,7 +12,9 @@ networks:
   dbnet:
     name: sqlnet
     driver: overlay
-
+    driver_opts:
+      encrypted: "true"
+      
 services:
   balancer_mysql:
     image: severalnines/proxysql:2.3.2
