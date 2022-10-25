@@ -51,7 +51,7 @@ services:
       replicas: 1  
       
   db1:
-    image: docker.io/bitnami/mariadb:10.6.10-debian-11-r13
+    image: docker.io/bitnami/mariadb-galera:10.6.10-debian-11-r10
     hostname: db1
     networks:
       - dbnet
@@ -85,7 +85,7 @@ services:
         constraints: [node.labels.node==docker1]
         
   db2:
-    image: docker.io/bitnami/mariadb:10.6.10-debian-11-r13
+    image: docker.io/bitnami/mariadb-galera:10.6.10-debian-11-r10
     hostname: db2
     networks:
       - dbnet
@@ -115,7 +115,7 @@ services:
       placement:
         constraints:  [node.labels.node==docker2]
   db3:
-    image: docker.io/bitnami/mariadb:10.6.10-debian-11-r13
+    image: docker.io/bitnami/mariadb-galera:10.6.10-debian-11-r10
     hostname: db3
     networks:
       - dbnet
